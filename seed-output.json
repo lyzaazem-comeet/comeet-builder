@@ -1,0 +1,190 @@
+{
+  "blocks": [
+    {
+      "id": "block-1767808063625-0",
+      "type": "hero",
+      "position": 0,
+      "config": {
+        "title": "Sophie & Paul",
+        "subtitle": "Nous nous marions !",
+        "eventDate": "2026-08-15T15:00:00",
+        "backgroundImage": "",
+        "showCountdown": true,
+        "ctaText": "Réserver votre place",
+        "ctaAction": "rsvp",
+        "backgroundColor": "#556B55",
+        "textColor": "#F5F3EF",
+        "fontSize": "xl",
+        "fontFamily": "elegant"
+      }
+    },
+    {
+      "id": "block-1767808063625-1",
+      "type": "text-image",
+      "position": 1,
+      "config": {
+        "title": "Notre Histoire",
+        "text": "Nous sommes heureux de vous inviter à célébrer notre union dans un cadre exceptionnel. Rejoignez-nous pour une journée inoubliable entourée de nature et d'élégance.",
+        "image": "",
+        "imageAlt": "Lieu de réception",
+        "layout": "image-right",
+        "backgroundColor": "#FFFFFF",
+        "textColor": "#2C3E2C",
+        "fontSize": "md",
+        "padding": "lg"
+      }
+    },
+    {
+      "id": "block-1767808063625-2",
+      "type": "rsvp",
+      "position": 2,
+      "config": {
+        "title": "Réservez votre place",
+        "description": "Merci de confirmer votre présence avant le 15 juin 2026",
+        "fields": [
+          "name",
+          "email",
+          "guests"
+        ],
+        "buttonText": "Confirmer ma présence",
+        "backgroundColor": "#556B55",
+        "textColor": "#F5F3EF"
+      }
+    },
+    {
+      "id": "block-1767808063625-3",
+      "type": "location",
+      "position": 3,
+      "config": {
+        "title": "Le Lieu",
+        "address": "Château de Vaux-le-Vicomte, 77950 Maincy, France",
+        "mapUrl": "https://maps.google.com/?q=Château+de+Vaux-le-Vicomte",
+        "description": "Un château historique au cœur d'un parc à la française, offrant un cadre majestueux pour notre célébration.",
+        "backgroundColor": "#F5F3EF",
+        "textColor": "#2C3E2C"
+      }
+    },
+    {
+      "id": "block-1767808063625-4",
+      "type": "agenda",
+      "position": 4,
+      "config": {
+        "title": "Programme de la Journée",
+        "backgroundColor": "#FFFFFF",
+        "textColor": "#2C3E2C",
+        "events": [
+          {
+            "time": "14:30",
+            "title": "Cérémonie",
+            "description": "Cérémonie laïque dans les jardins"
+          },
+          {
+            "time": "16:00",
+            "title": "Cocktail",
+            "description": "Vin d'honneur sur la terrasse"
+          },
+          {
+            "time": "19:00",
+            "title": "Dîner",
+            "description": "Repas gastronomique dans la grande salle"
+          },
+          {
+            "time": "22:00",
+            "title": "Soirée",
+            "description": "Danse et festivités jusqu'au bout de la nuit"
+          }
+        ]
+      }
+    },
+    {
+      "id": "block-1767808063625-5",
+      "type": "gallery",
+      "position": 5,
+      "config": {
+        "title": "Nos Souvenirs",
+        "images": [],
+        "layout": "masonry",
+        "autoplay": false,
+        "showThumbnails": true,
+        "backgroundColor": "#F5F3EF",
+        "textColor": "#2C3E2C"
+      }
+    },
+    {
+      "id": "block-1767808063625-6",
+      "type": "text-image",
+      "position": 6,
+      "config": {
+        "title": "Informations Pratiques",
+        "text": "Hébergement : Plusieurs hôtels sont disponibles dans les environs. Une liste vous sera envoyée après confirmation.\n\nDress code : Tenue de soirée élégante. Les tons champagne, vert sauge et or sont les bienvenus.\n\nCadeaux : Votre présence est notre plus beau cadeau. Si vous le souhaitez, une urne sera à votre disposition.",
+        "image": "",
+        "imageAlt": "Détails pratiques",
+        "layout": "text-left",
+        "backgroundColor": "#FFFFFF",
+        "textColor": "#2C3E2C",
+        "fontSize": "md",
+        "padding": "lg"
+      }
+    },
+    {
+      "id": "block-1767808063625-7",
+      "type": "faq",
+      "position": 7,
+      "config": {
+        "title": "Questions Fréquentes",
+        "backgroundColor": "#F5F3EF",
+        "textColor": "#2C3E2C",
+        "questions": [
+          {
+            "question": "Y a-t-il un parking sur place ?",
+            "answer": "Oui, un parking gratuit est disponible pour tous les invités au château."
+          },
+          {
+            "question": "Puis-je venir accompagné(e) ?",
+            "answer": "Les invitations sont nominatives. Merci de nous contacter si vous souhaitez venir accompagné."
+          },
+          {
+            "question": "Le lieu est-il accessible aux personnes à mobilité réduite ?",
+            "answer": "Oui, le château dispose d'accès adaptés. N'hésitez pas à nous signaler vos besoins spécifiques."
+          },
+          {
+            "question": "Que faire si je ne peux finalement pas venir ?",
+            "answer": "Merci de nous prévenir dès que possible afin que nous puissions ajuster les arrangements."
+          }
+        ]
+      }
+    },
+    {
+      "id": "block-1767808063625-8",
+      "type": "contact",
+      "position": 8,
+      "config": {
+        "title": "Nous Contacter",
+        "email": "sophie.paul.mariage@example.com",
+        "phone": "+33 6 12 34 56 78",
+        "socialLinks": [],
+        "backgroundColor": "#556B55",
+        "textColor": "#F5F3EF"
+      }
+    },
+    {
+      "id": "block-1767808063625-9",
+      "type": "footer",
+      "position": 9,
+      "config": {
+        "text": "Sophie & Paul • 15 Août 2026",
+        "links": [],
+        "backgroundColor": "#2C3E2C",
+        "textColor": "#F5F3EF"
+      }
+    }
+  ],
+  "theme": {
+    "primaryColor": "#556B55",
+    "secondaryColor": "#C9A96E",
+    "backgroundColor": "#F5F3EF",
+    "textColor": "#2C3E2C",
+    "fontFamily": "Playfair Display"
+  },
+  "lastUpdated": "2026-01-07T17:47:43.625Z"
+}

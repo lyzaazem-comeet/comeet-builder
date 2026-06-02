@@ -1,0 +1,239 @@
+{
+  "templateName": "Elegant Garden Wedding",
+  "description": "Template de mariage élégant inspiré du design Figma avec palette vert sauge et or",
+  "theme": {
+    "primaryColor": "#556B55",
+    "secondaryColor": "#C9A96E",
+    "backgroundColor": "#F5F3EF",
+    "textColor": "#2C3E2C",
+    "fontFamily": "Playfair Display"
+  },
+  "blocks": [
+    {
+      "type": "hero",
+      "config": {
+        "title": "Sophie & Paul",
+        "subtitle": "Nous nous marions !",
+        "eventDate": "2026-08-15T15:00:00",
+        "backgroundImage": "",
+        "showCountdown": true,
+        "ctaText": "Réserver votre place",
+        "ctaAction": "rsvp",
+        "backgroundColor": "#556B55",
+        "textColor": "#F5F3EF",
+        "fontSize": "xl",
+        "fontFamily": "elegant"
+      }
+    },
+    {
+      "type": "text-image",
+      "config": {
+        "title": "Notre Histoire",
+        "text": "Nous sommes heureux de vous inviter à célébrer notre union dans un cadre exceptionnel. Rejoignez-nous pour une journée inoubliable entourée de nature et d'élégance.",
+        "image": "",
+        "imageAlt": "Lieu de réception",
+        "layout": "image-right",
+        "backgroundColor": "#FFFFFF",
+        "textColor": "#2C3E2C",
+        "fontSize": "md",
+        "padding": "lg"
+      }
+    },
+    {
+      "type": "rsvp",
+      "config": {
+        "title": "Réservez votre place",
+        "description": "Merci de confirmer votre présence avant le 15 juin 2026",
+        "fields": ["name", "email", "guests"],
+        "buttonText": "Confirmer ma présence",
+        "backgroundColor": "#556B55",
+        "textColor": "#F5F3EF"
+      }
+    },
+    {
+      "type": "location",
+      "config": {
+        "title": "Le Lieu",
+        "address": "Château de Vaux-le-Vicomte, 77950 Maincy, France",
+        "mapUrl": "https://maps.google.com/?q=Château+de+Vaux-le-Vicomte",
+        "description": "Un château historique au cœur d'un parc à la française, offrant un cadre majestueux pour notre célébration.",
+        "backgroundColor": "#F5F3EF",
+        "textColor": "#2C3E2C"
+      }
+    },
+    {
+      "type": "agenda",
+      "config": {
+        "title": "Programme de la Journée",
+        "backgroundColor": "#FFFFFF",
+        "textColor": "#2C3E2C",
+        "events": [
+          {
+            "time": "14:30",
+            "title": "Cérémonie",
+            "description": "Cérémonie laïque dans les jardins"
+          },
+          {
+            "time": "16:00",
+            "title": "Cocktail",
+            "description": "Vin d'honneur sur la terrasse"
+          },
+          {
+            "time": "19:00",
+            "title": "Dîner",
+            "description": "Repas gastronomique dans la grande salle"
+          },
+          {
+            "time": "22:00",
+            "title": "Soirée",
+            "description": "Danse et festivités jusqu'au bout de la nuit"
+          }
+        ]
+      }
+    },
+    {
+      "type": "gallery",
+      "config": {
+        "title": "Nos Souvenirs",
+        "images": [],
+        "layout": "masonry",
+        "autoplay": false,
+        "showThumbnails": true,
+        "backgroundColor": "#F5F3EF",
+        "textColor": "#2C3E2C"
+      }
+    },
+    {
+      "type": "text-image",
+      "config": {
+        "title": "Informations Pratiques",
+        "text": "Hébergement : Plusieurs hôtels sont disponibles dans les environs. Une liste vous sera envoyée après confirmation.\n\nDress code : Tenue de soirée élégante. Les tons champagne, vert sauge et or sont les bienvenus.\n\nCadeaux : Votre présence est notre plus beau cadeau. Si vous le souhaitez, une urne sera à votre disposition.",
+        "image": "",
+        "imageAlt": "Détails pratiques",
+        "layout": "text-left",
+        "backgroundColor": "#FFFFFF",
+        "textColor": "#2C3E2C",
+        "fontSize": "md",
+        "padding": "lg"
+      }
+    },
+    {
+      "type": "faq",
+      "config": {
+        "title": "Questions Fréquentes",
+        "backgroundColor": "#F5F3EF",
+        "textColor": "#2C3E2C",
+        "questions": [
+          {
+            "question": "Y a-t-il un parking sur place ?",
+            "answer": "Oui, un parking gratuit est disponible pour tous les invités au château."
+          },
+          {
+            "question": "Puis-je venir accompagné(e) ?",
+            "answer": "Les invitations sont nominatives. Merci de nous contacter si vous souhaitez venir accompagné."
+          },
+          {
+            "question": "Le lieu est-il accessible aux personnes à mobilité réduite ?",
+            "answer": "Oui, le château dispose d'accès adaptés. N'hésitez pas à nous signaler vos besoins spécifiques."
+          },
+          {
+            "question": "Que faire si je ne peux finalement pas venir ?",
+            "answer": "Merci de nous prévenir dès que possible afin que nous puissions ajuster les arrangements."
+          }
+        ]
+      }
+    },
+    {
+      "type": "contact",
+      "config": {
+        "title": "Nous Contacter",
+        "email": "sophie.paul.mariage@example.com",
+        "phone": "+33 6 12 34 56 78",
+        "socialLinks": [],
+        "backgroundColor": "#556B55",
+        "textColor": "#F5F3EF"
+      }
+    },
+    {
+      "type": "footer",
+      "config": {
+        "text": "Sophie & Paul • 15 Août 2026",
+        "links": [],
+        "backgroundColor": "#2C3E2C",
+        "textColor": "#F5F3EF"
+      }
+    }
+  ],
+  "colorPalette": {
+    "description": "Palette inspirée du template Figma",
+    "colors": {
+      "primary": {
+        "name": "Vert Sauge Foncé",
+        "hex": "#556B55",
+        "usage": "Couleur principale, headers, CTA"
+      },
+      "secondary": {
+        "name": "Or Champagne",
+        "hex": "#C9A96E",
+        "usage": "Accents, boutons secondaires, détails"
+      },
+      "background": {
+        "name": "Beige Crème",
+        "hex": "#F5F3EF",
+        "usage": "Fond de sections alternées"
+      },
+      "text": {
+        "name": "Vert Foncé",
+        "hex": "#2C3E2C",
+        "usage": "Texte principal"
+      },
+      "textLight": {
+        "name": "Crème Clair",
+        "hex": "#F5F3EF",
+        "usage": "Texte sur fond foncé"
+      },
+      "white": {
+        "name": "Blanc",
+        "hex": "#FFFFFF",
+        "usage": "Fond de sections principales"
+      }
+    }
+  },
+  "typography": {
+    "description": "Polices élégantes pour un mariage raffiné",
+    "fonts": {
+      "primary": {
+        "name": "Playfair Display",
+        "usage": "Titres et headers",
+        "style": "Serif élégant",
+        "fallback": "Georgia, serif"
+      },
+      "secondary": {
+        "name": "Montserrat",
+        "usage": "Corps de texte",
+        "style": "Sans-serif moderne",
+        "fallback": "Arial, sans-serif"
+      }
+    }
+  },
+  "designNotes": {
+    "inspiration": "Design Figma avec thème jardin élégant",
+    "style": "Élégant, naturel, romantique",
+    "targetAudience": "Mariage raffiné dans un cadre champêtre",
+    "keyFeatures": [
+      "Palette de couleurs harmonieuse vert sauge et or",
+      "Typography élégante avec Playfair Display",
+      "Sections alternées fond blanc/beige pour rythme visuel",
+      "Hero avec countdown pour créer l'anticipation",
+      "Galerie photos pour partager les souvenirs",
+      "FAQ détaillée pour répondre aux questions pratiques"
+    ],
+    "imageRecommendations": {
+      "hero": "Photo du couple en extérieur, lumière naturelle, tons chauds",
+      "location": "Photo du château et des jardins",
+      "gallery": "Collection de photos du couple, paysages, détails décoratifs",
+      "textImage1": "Photo du lieu de réception ou des jardins",
+      "textImage2": "Détails décoratifs (fleurs, table, etc.)"
+    }
+  }
+}
