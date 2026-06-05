@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { Preview } from "@/components/preview"
 import { ConfigPanel } from "@/components/config-panel"
@@ -49,7 +49,7 @@ export default function EventBuilder() {
 
   const getStorageKey = useCallback(
     (id?: string | null) => `event-builder-data${id ? `-${id}` : ""}`,
-    []
+    [],
   )
 
   // Load on mount: check for event ID in URL
@@ -62,7 +62,8 @@ export default function EventBuilder() {
       const savedData = localStorage.getItem(getStorageKey())
       if (savedData) {
         try {
-          const { blocks: savedBlocks, theme: savedTheme } = JSON.parse(savedData)
+          const { blocks: savedBlocks, theme: savedTheme } =
+            JSON.parse(savedData)
           setBlocks(savedBlocks)
           setTheme(savedTheme)
           setShowTemplateSelector(false)
@@ -95,7 +96,9 @@ export default function EventBuilder() {
           setShowTemplateSelector(false)
 
           if (existingWebsite.published && existingWebsite.slug) {
-            setPublishedUrl(`${window.location.origin}/site/${existingWebsite.slug}`)
+            setPublishedUrl(
+              `${window.location.origin}/site/${existingWebsite.slug}`,
+            )
           }
         } else {
           // Check localStorage
@@ -103,7 +106,8 @@ export default function EventBuilder() {
           const savedData = localStorage.getItem(storageKey)
           if (savedData) {
             try {
-              const { blocks: savedBlocks, theme: savedTheme } = JSON.parse(savedData)
+              const { blocks: savedBlocks, theme: savedTheme } =
+                JSON.parse(savedData)
               setBlocks(savedBlocks)
               setTheme(savedTheme)
               setShowTemplateSelector(false)
@@ -120,7 +124,8 @@ export default function EventBuilder() {
         const savedData = localStorage.getItem(storageKey)
         if (savedData) {
           try {
-            const { blocks: savedBlocks, theme: savedTheme } = JSON.parse(savedData)
+            const { blocks: savedBlocks, theme: savedTheme } =
+              JSON.parse(savedData)
             setBlocks(savedBlocks)
             setTheme(savedTheme)
             setShowTemplateSelector(false)
@@ -142,13 +147,100 @@ export default function EventBuilder() {
     return () => window.removeEventListener("delete-block", handler)
   })
 
-  // Save to localStorage whenever blocks or theme change
+  // Auto-save: to database (if eventId exists) or localStorage (fallback)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const lastSaveRef = useRef<string>("") // Track last saved state to avoid redundant saves
+
   useEffect(() => {
-    if (blocks.length > 0 || !showTemplateSelector) {
-      const storageKey = getStorageKey(eventId)
-      localStorage.setItem(storageKey, JSON.stringify({ blocks, theme }))
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
     }
-  }, [blocks, theme, showTemplateSelector, eventId, getStorageKey])
+
+    // Only save if there's content
+    if (blocks.length === 0 && showTemplateSelector) {
+      return
+    }
+
+    // Set new timeout for debounced save (1 second after changes stop)
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        // Check if state has actually changed since last save
+        const currentState = JSON.stringify({ blocks, theme })
+        if (currentState === lastSaveRef.current) {
+          return // Nothing changed, skip save
+        }
+        lastSaveRef.current = currentState
+
+        // If eventId exists, save to database; otherwise use localStorage
+        if (eventId) {
+          // Save to database (silent auto-save, don't show toast)
+          const response = await fetch("/api/websites", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              eventId,
+              name: eventDetails?.name || "Untitled Event",
+              theme,
+              blocks,
+              published: false,
+            }),
+          })
+
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error || "Save failed")
+          }
+          // Success - DB save complete, no need for localStorage
+        } else {
+          // Fallback: save to localStorage for users without eventId
+          const storageKey = getStorageKey()
+          const dataToSave = JSON.stringify({ blocks, theme })
+
+          // Check size before saving (localStorage limit is ~5-10MB)
+          if (dataToSave.length > 4 * 1024 * 1024) {
+            console.warn(
+              "Data too large for localStorage, size:",
+              Math.round(dataToSave.length / 1024 / 1024) + "MB",
+            )
+            toast.error("Event data is too large. Please remove some content.")
+            return
+          }
+
+          localStorage.setItem(storageKey, dataToSave)
+        }
+      } catch (error: any) {
+        console.error("Auto-save failed:", error)
+        // Fallback: save to localStorage as emergency backup
+        // This ensures data is not lost if network/DB is down
+        try {
+          const storageKey = getStorageKey(eventId)
+          const dataToSave = JSON.stringify({ blocks, theme })
+          if (dataToSave.length <= 4 * 1024 * 1024) {
+            localStorage.setItem(storageKey, dataToSave)
+          }
+        } catch (localStorageError) {
+          console.error(
+            "Both database and localStorage saves failed:",
+            localStorageError,
+          )
+        }
+      }
+    }, 1000) // Wait 1 second after last change before saving
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [
+    blocks,
+    theme,
+    showTemplateSelector,
+    eventId,
+    eventDetails?.name,
+    getStorageKey,
+  ])
 
   const handleSelectTemplate = (template: Template) => {
     let updatedBlocks = [...template.blocks]
@@ -163,7 +255,9 @@ export default function EventBuilder() {
               ...block.config,
               title: eventDetails.name || block.config.title,
               eventDate: eventDetails.start_event_date
-                ? new Date(`${eventDetails.start_event_date}T${eventDetails.start_event_time || "00:00"}`).toISOString()
+                ? new Date(
+                    `${eventDetails.start_event_date}T${eventDetails.start_event_time || "00:00"}`,
+                  ).toISOString()
                 : block.config.eventDate,
             },
           }
@@ -184,7 +278,8 @@ export default function EventBuilder() {
               address: address || block.config.address,
               rue: eventDetails.address_line_one || block.config.rue || "",
               ville: eventDetails.city || block.config.ville || "",
-              codePostal: eventDetails.postal_code || block.config.codePostal || "",
+              codePostal:
+                eventDetails.postal_code || block.config.codePostal || "",
             },
           }
         }
@@ -222,7 +317,9 @@ export default function EventBuilder() {
   }
 
   const updateBlock = (id: string, config: any) => {
-    setBlocks(blocks.map((block) => (block.id === id ? { ...block, config } : block)))
+    setBlocks(
+      blocks.map((block) => (block.id === id ? { ...block, config } : block)),
+    )
     if (selectedBlock?.id === id) {
       setSelectedBlock({ ...selectedBlock, config })
     }
@@ -258,10 +355,28 @@ export default function EventBuilder() {
   const handleNewProject = () => {
     if (
       confirm(
-        "Êtes-vous sûr de vouloir créer un nouveau projet ? Toutes les modifications non exportées seront perdues."
+        "Êtes-vous sûr de vouloir créer un nouveau projet ? Toutes les modifications non exportées seront perdues.",
       )
     ) {
-      localStorage.removeItem(getStorageKey(eventId))
+      // Clear database if eventId exists, otherwise clear localStorage
+      if (eventId) {
+        // Delete from database: create empty website
+        fetch("/api/websites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            eventId,
+            name: eventDetails?.name || "Untitled Event",
+            theme: DEFAULT_THEME,
+            blocks: [],
+            published: false,
+          }),
+        }).catch((error) => console.error("Failed to clear project:", error))
+      } else {
+        // Clear localStorage for non-eventId users
+        localStorage.removeItem(getStorageKey())
+      }
+
       setBlocks([])
       setTheme(DEFAULT_THEME)
       setShowTemplateSelector(true)
@@ -336,8 +451,13 @@ export default function EventBuilder() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: "#ab0036", borderTopColor: "transparent" }} />
-          <p className="text-lg text-muted-foreground">Chargement de l&apos;événement...</p>
+          <div
+            className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4"
+            style={{ borderColor: "#ab0036", borderTopColor: "transparent" }}
+          />
+          <p className="text-lg text-muted-foreground">
+            Chargement de l&apos;événement...
+          </p>
         </div>
       </div>
     )
@@ -436,12 +556,23 @@ function getDefaultConfig(type: BlockType) {
       title: "Programme",
       events: [
         { time: "09:00", title: "Accueil", description: "Café et networking" },
-        { time: "10:00", title: "Conférence principale", description: "Présentation du thème" },
+        {
+          time: "10:00",
+          title: "Conférence principale",
+          description: "Présentation du thème",
+        },
       ],
     },
     speakers: {
       title: "Intervenants",
-      speakers: [{ name: "Jean Dupont", role: "Expert", bio: "Spécialiste reconnu", image: "" }],
+      speakers: [
+        {
+          name: "Jean Dupont",
+          role: "Expert",
+          bio: "Spécialiste reconnu",
+          image: "",
+        },
+      ],
     },
     location: {
       title: "Lieu",
@@ -461,7 +592,12 @@ function getDefaultConfig(type: BlockType) {
     },
     faq: {
       title: "Questions fréquentes",
-      questions: [{ question: "Où se déroule l'événement ?", answer: "L'événement a lieu à Paris." }],
+      questions: [
+        {
+          question: "Où se déroule l'événement ?",
+          answer: "L'événement a lieu à Paris.",
+        },
+      ],
     },
     contact: {
       title: "Contact",
@@ -486,7 +622,8 @@ function getDefaultConfig(type: BlockType) {
     },
     ticketing: {
       title: "Billetterie",
-      description: "Choisissez votre billet et rejoignez-nous pour cet événement exceptionnel",
+      description:
+        "Choisissez votre billet et rejoignez-nous pour cet événement exceptionnel",
       tickets: [
         {
           id: "1",
