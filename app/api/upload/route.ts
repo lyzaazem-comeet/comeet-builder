@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     if (!file || !file.type.startsWith("image/")) {
       return NextResponse.json(
         { error: "Invalid or missing image file" },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -22,7 +22,14 @@ export async function POST(req: Request) {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    const { error } = await supabase.storage
+    console.log("Attempting to upload to Supabase:", {
+      filename,
+      bucket: "event-images",
+      fileSize: buffer.length,
+      contentType: file.type,
+    })
+
+    const { data, error } = await supabase.storage
       .from("event-images")
       .upload(filename, buffer, {
         contentType: file.type,
@@ -30,18 +37,33 @@ export async function POST(req: Request) {
       })
 
     if (error) {
+      console.error("Supabase upload error:", error)
       return NextResponse.json(
-        { error: `Upload failed: ${error.message}` },
-        { status: 500 }
+        {
+          error: `Upload failed: ${error.message}`,
+          details: error,
+        },
+        { status: 500 },
       )
     }
+
+    console.log("Upload successful:", data)
 
     const {
       data: { publicUrl },
     } = supabase.storage.from("event-images").getPublicUrl(filename)
 
+    console.log("Generated public URL:", publicUrl)
+
     return NextResponse.json({ url: publicUrl })
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+    console.error("Upload endpoint error:", e)
+    return NextResponse.json(
+      {
+        error: e.message,
+        stack: process.env.NODE_ENV === "development" ? e.stack : undefined,
+      },
+      { status: 500 },
+    )
   }
 }

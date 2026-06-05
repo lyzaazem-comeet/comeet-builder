@@ -30,7 +30,11 @@ export function SpeakersBlock({
   onClick,
 }: SpeakersBlockProps) {
   const titleFontSize = config.titleConfig?.fontSize || "30"
-  const titleFontFamily = config.titleConfig?.fontFamily || config.fontFamily || theme.fontFamily || "modern"
+  const titleFontFamily =
+    config.titleConfig?.fontFamily ||
+    config.fontFamily ||
+    theme.fontFamily ||
+    "modern"
 
   return (
     <section
@@ -41,7 +45,9 @@ export function SpeakersBlock({
       style={{
         backgroundColor: config.backgroundColor || theme.backgroundColor,
         color: config.textColor || theme.textColor,
-        fontFamily: getFontFamily(config.fontFamily || theme.fontFamily || "modern"),
+        fontFamily: getFontFamily(
+          config.fontFamily || theme.fontFamily || "modern",
+        ),
         fontSize: getFontSize(config.fontSize || "16"),
       }}
     >
@@ -60,12 +66,12 @@ export function SpeakersBlock({
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {config.speakers.map((speaker, index) => (
             <div key={index} className="text-center">
-              <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-muted overflow-hidden">
+              <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-muted overflow-hidden flex items-center justify-center">
                 {speaker.image ? (
                   <img
                     src={speaker.image || "/placeholder.svg"}
                     alt={speaker.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-center"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
