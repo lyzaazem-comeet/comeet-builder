@@ -9,6 +9,13 @@ export const LOCKED_REQUIRED_FIELD_IDS = [
   "attending_status",
 ] as const
 
+// Template boilerplate field ids (f1, f2, …) — superseded by locked RSVP fields
+const LEGACY_TEMPLATE_FIELD_ID_PATTERN = /^f\d+$/
+
+function isLegacyTemplateField(field: CustomFormField): boolean {
+  return LEGACY_TEMPLATE_FIELD_ID_PATTERN.test(field.id)
+}
+
 const LOCKED_REQUIRED_FIELDS: CustomFormField[] = [
   {
     id: "name_title",
@@ -70,7 +77,11 @@ export function getNormalizedCustomFormFields(fields: CustomFormField[] = []): C
     }
   }
 
-  const nonLockedCustomFields = fields.filter((field) => !LOCKED_REQUIRED_FIELD_IDS.includes(field.id as typeof LOCKED_REQUIRED_FIELD_IDS[number]))
+  const nonLockedCustomFields = fields.filter(
+    (field) =>
+      !LOCKED_REQUIRED_FIELD_IDS.includes(field.id as typeof LOCKED_REQUIRED_FIELD_IDS[number]) &&
+      !isLegacyTemplateField(field),
+  )
 
   // Apply user label overrides to locked fields
   const lockedFields = LOCKED_REQUIRED_FIELDS.map((field) => {

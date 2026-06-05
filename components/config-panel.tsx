@@ -47,12 +47,16 @@ export function ConfigPanel({
   }, [selectedBlock])
 
   React.useEffect(() => {
-    if (selectedBlock?.type !== "custom-form") return
-    const normalizedFields = getNormalizedCustomFormFields(config.fields || [])
-    if (JSON.stringify(config.fields || []) !== JSON.stringify(normalizedFields)) {
-      updateConfig("fields", normalizedFields)
+    if (!selectedBlock || selectedBlock.type !== "custom-form") return
+    const sourceFields = selectedBlock.config.fields || []
+    const normalizedFields = getNormalizedCustomFormFields(sourceFields)
+    if (JSON.stringify(sourceFields) !== JSON.stringify(normalizedFields)) {
+      onUpdateBlock(selectedBlock.id, {
+        ...selectedBlock.config,
+        fields: normalizedFields,
+      })
     }
-  }, [selectedBlock?.type, config.fields])
+  }, [selectedBlock])
 
   const updateConfig = (key: string, value: any) => {
     const newConfig = { ...config, [key]: value }
@@ -97,6 +101,44 @@ export function ConfigPanel({
     if (selectedBlock) {
       onUpdateBlock(selectedBlock.id, newConfig)
     }
+  }
+
+  const updateFormField = (fieldId: string, key: string, value: any) => {
+    const fields = getNormalizedCustomFormFields(config.fields || [])
+    const newFields = fields.map((field) =>
+      field.id === fieldId ? { ...field, [key]: value } : field,
+    )
+    updateConfig("fields", newFields)
+  }
+
+  const removeFormField = (fieldId: string) => {
+    if (
+      LOCKED_REQUIRED_FIELD_IDS.includes(
+        fieldId as (typeof LOCKED_REQUIRED_FIELD_IDS)[number],
+      )
+    ) {
+      return
+    }
+    const fields = getNormalizedCustomFormFields(config.fields || [])
+    updateConfig(
+      "fields",
+      fields.filter((field) => field.id !== fieldId),
+    )
+  }
+
+  const addFormField = () => {
+    const fields = getNormalizedCustomFormFields(config.fields || [])
+    updateConfig("fields", [
+      ...fields,
+      {
+        id: `field-${Date.now()}`,
+        label: "Nouveau champ",
+        type: "text",
+        placeholder: "",
+        required: false,
+        options: [],
+      },
+    ])
   }
 
   if (!open) return null
@@ -926,19 +968,7 @@ export function ConfigPanel({
           <div>
             <div className="flex items-center justify-between mb-2">
               <Label>Champs du formulaire</Label>
-              <Button
-                size="sm"
-                onClick={() =>
-                  addArrayItem("fields", {
-                    id: `field-${Date.now()}`,
-                    label: "Nouveau champ",
-                    type: "text",
-                    placeholder: "",
-                    required: false,
-                    options: [],
-                  })
-                }
-              >
+              <Button size="sm" onClick={addFormField}>
                 <Plus size={14} className="mr-1" />
                 Ajouter
               </Button>
@@ -955,12 +985,17 @@ export function ConfigPanel({
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">
                       Champ {index + 1}
+                      {isLocked && (
+                        <span className="ml-2 text-xs text-muted-foreground font-normal">
+                          (requis)
+                        </span>
+                      )}
                     </span>
                     {!isLocked && (
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => removeArrayItem("fields", index)}
+                        onClick={() => removeFormField(field.id)}
                       >
                         <Trash2 size={14} />
                       </Button>
@@ -974,7 +1009,7 @@ export function ConfigPanel({
                         placeholder="Nom du champ"
                         value={field.label || ""}
                         onChange={(e) =>
-                          updateNestedConfig("fields", index, "label", e.target.value)
+                          updateFormField(field.id, "label", e.target.value)
                         }
                       />
                     </div>
@@ -985,7 +1020,7 @@ export function ConfigPanel({
                         value={field.type || "text"}
                         disabled={isLocked}
                         onValueChange={(value) =>
-                          updateNestedConfig("fields", index, "type", value)
+                          updateFormField(field.id, "type", value)
                         }
                       >
                         <SelectTrigger>
@@ -1008,7 +1043,7 @@ export function ConfigPanel({
                         value={field.placeholder || ""}
                         disabled={isLocked}
                         onChange={(e) =>
-                          updateNestedConfig("fields", index, "placeholder", e.target.value)
+                          updateFormField(field.id, "placeholder", e.target.value)
                         }
                       />
                     </div>
@@ -1022,24 +1057,14 @@ export function ConfigPanel({
                           value={(field.options || []).join("\n")}
                           disabled={isLocked}
                           onChange={(e) => {
-                            // Split by newlines and keep all non-empty options
                             const options = e.target.value.split("\n")
-                            updateNestedConfig(
-                              "fields",
-                              index,
-                              "options",
-                              options
-                            )
+                            updateFormField(field.id, "options", options)
                           }}
                           onBlur={(e) => {
-                            // Clean up empty lines only when user leaves the field
-                            const options = e.target.value.split("\n").filter((o: string) => o.trim())
-                            updateNestedConfig(
-                              "fields",
-                              index,
-                              "options",
-                              options
-                            )
+                            const options = e.target.value
+                              .split("\n")
+                              .filter((o: string) => o.trim())
+                            updateFormField(field.id, "options", options)
                           }}
                           rows={4}
                         />
@@ -1055,7 +1080,7 @@ export function ConfigPanel({
                         checked={field.required}
                         disabled={isLocked}
                         onCheckedChange={(checked) =>
-                          updateNestedConfig("fields", index, "required", checked)
+                          updateFormField(field.id, "required", checked)
                         }
                       />
                       <Label htmlFor={`required-${index}`}>

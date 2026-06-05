@@ -150,7 +150,7 @@ export function CustomFormBlock({
             </Label>
             <Input
               id={field.id}
-              type={field.type}
+              type={field.type === "phone" ? "tel" : field.type}
               placeholder={field.placeholder}
               required={field.required}
               className="mt-1 bg-white text-gray-900 border-gray-300 focus:border-gray-500 focus:ring-gray-500"

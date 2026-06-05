@@ -21,6 +21,7 @@ interface RSVPBlockProps {
     fontFamily?: string
     buttonBackgroundColor?: string
     buttonTextColor?: string
+    fields?: CustomFormField[]
     customFields?: CustomFormField[]
     companionsLabel?: string
     companionsDescription?: string
@@ -39,7 +40,9 @@ export function RSVPBlock({
   const titleFontSize = config.titleConfig?.fontSize || "30"
   const titleFontFamily = config.titleConfig?.fontFamily || config.fontFamily || theme.fontFamily || "modern"
 
-  const normalizedFields = getNormalizedCustomFormFields(config.customFields || [])
+  const normalizedFields = getNormalizedCustomFormFields(
+    config.fields || config.customFields || [],
+  )
 
   const extraFields = normalizedFields.filter(
     (field) => ![

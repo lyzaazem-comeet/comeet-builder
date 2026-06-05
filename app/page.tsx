@@ -13,6 +13,20 @@ import type { Template } from "@/lib/templates"
 import { getNormalizedCustomFormFields } from "@/lib/custom-form"
 import { toast } from "sonner"
 
+function normalizeFormBlocks(blocks: Block[]): Block[] {
+  return blocks.map((block) => {
+    if (block.type !== "custom-form" && block.type !== "rsvp") return block
+    const rawFields = block.config.fields || block.config.customFields || []
+    return {
+      ...block,
+      config: {
+        ...block.config,
+        fields: getNormalizedCustomFormFields(rawFields),
+      },
+    }
+  })
+}
+
 const DEFAULT_THEME: Theme = {
   primaryColor: "#3b82f6",
   secondaryColor: "#64748b",
@@ -64,7 +78,7 @@ export default function EventBuilder() {
         try {
           const { blocks: savedBlocks, theme: savedTheme } =
             JSON.parse(savedData)
-          setBlocks(savedBlocks)
+          setBlocks(normalizeFormBlocks(savedBlocks))
           setTheme(savedTheme)
           setShowTemplateSelector(false)
         } catch (error) {
@@ -85,12 +99,14 @@ export default function EventBuilder() {
 
         if (existingWebsite) {
           // Load from DB
-          const dbBlocks = existingWebsite.blocks.map((b: any) => ({
-            id: b.id,
-            type: b.type,
-            position: b.position,
-            config: b.config,
-          }))
+          const dbBlocks = normalizeFormBlocks(
+            existingWebsite.blocks.map((b: any) => ({
+              id: b.id,
+              type: b.type,
+              position: b.position,
+              config: b.config,
+            })),
+          )
           setBlocks(dbBlocks)
           setTheme(existingWebsite.theme as Theme)
           setShowTemplateSelector(false)
@@ -108,7 +124,7 @@ export default function EventBuilder() {
             try {
               const { blocks: savedBlocks, theme: savedTheme } =
                 JSON.parse(savedData)
-              setBlocks(savedBlocks)
+              setBlocks(normalizeFormBlocks(savedBlocks))
               setTheme(savedTheme)
               setShowTemplateSelector(false)
             } catch (error) {
@@ -126,7 +142,7 @@ export default function EventBuilder() {
           try {
             const { blocks: savedBlocks, theme: savedTheme } =
               JSON.parse(savedData)
-            setBlocks(savedBlocks)
+            setBlocks(normalizeFormBlocks(savedBlocks))
             setTheme(savedTheme)
             setShowTemplateSelector(false)
           } catch (e) {
@@ -252,7 +268,7 @@ export default function EventBuilder() {
   ])
 
   const handleSelectTemplate = (template: Template) => {
-    let updatedBlocks = [...template.blocks]
+    let updatedBlocks = normalizeFormBlocks(template.blocks)
 
     // Pre-populate blocks with event data if available
     if (eventDetails) {

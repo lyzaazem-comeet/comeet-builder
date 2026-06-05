@@ -18,7 +18,10 @@ import {
 } from "@/components/ui/select"
 import { CheckCircle, Loader2 } from "lucide-react"
 import { getFontFamily, getFontSize } from "@/lib/font-utils"
-import { getNormalizedCustomFormFields } from "@/lib/custom-form"
+import {
+  getNormalizedCustomFormFields,
+  LOCKED_REQUIRED_FIELD_IDS,
+} from "@/lib/custom-form"
 
 interface PublishedRSVPBlockProps {
   config: {
@@ -91,22 +94,21 @@ export function PublishedRSVPBlock({
     () => getNormalizedCustomFormFields(config.fields || []),
     [config.fields],
   )
-  const extraFields = normalizedFields.filter(
-    (field) =>
-      ![
-        "name_title",
-        "first_name",
-        "last_name",
-        "email",
-        "mobile",
-        "attending_status",
-      ].includes(field.id),
-  )
 
-  // Helper to get custom label for locked fields
-  const getFieldLabel = (fieldId: string, defaultLabel: string) => {
-    const field = normalizedFields.find((f) => f.id === fieldId)
-    return field?.label || defaultLabel
+  const isLockedField = (fieldId: string) =>
+    LOCKED_REQUIRED_FIELD_IDS.includes(
+      fieldId as (typeof LOCKED_REQUIRED_FIELD_IDS)[number],
+    )
+
+  const attendingLabelToValue: Record<string, string> = {
+    Oui: "1",
+    Non: "3",
+    "Je ne sais pas encore": "2",
+  }
+
+  const titleLabelToValue: Record<string, string> = {
+    "M.": "1",
+    Mme: "2",
   }
 
   const updateMainAttendee = (field: keyof MainAttendee, value: string) => {
@@ -151,11 +153,274 @@ export function PublishedRSVPBlock({
 
   const handleAttendingStatusChange = (status: string) => {
     updateMainAttendee("attendingStatus", status)
-    // Reset companions when selecting "Non" (status "3")
     if (status === "3") {
       setCompanionsCountInput("")
       setCompanions([])
     }
+  }
+
+  const renderPublishedField = (field: CustomFormField) => {
+    const labelStyle = { color: config.textColor || theme.textColor }
+
+    if (field.id === "name_title") {
+      const validOptions = (field.options || []).filter((opt) => opt && opt.trim())
+      return (
+        <div key={field.id}>
+          <Label className="text-sm font-medium mb-2 block" style={labelStyle}>
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          <Select
+            value={mainAttendee.nameTitle}
+            onValueChange={(v) => updateMainAttendee("nameTitle", v)}
+          >
+            <SelectTrigger className="mt-1 bg-white text-gray-900 border-gray-300">
+              <SelectValue placeholder={field.placeholder || "Sélectionner..."} />
+            </SelectTrigger>
+            <SelectContent>
+              {validOptions.map((option) => (
+                <SelectItem
+                  key={option}
+                  value={titleLabelToValue[option] || option}
+                >
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )
+    }
+
+    if (field.id === "first_name") {
+      return (
+        <div key={field.id}>
+          <Label className="text-sm font-medium mb-2 block" style={labelStyle}>
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          <Input
+            required={field.required}
+            value={mainAttendee.firstName}
+            onChange={(e) => updateMainAttendee("firstName", e.target.value)}
+            placeholder={field.placeholder || ""}
+            className="mt-1 bg-white text-gray-900 border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+          />
+        </div>
+      )
+    }
+
+    if (field.id === "last_name") {
+      return (
+        <div key={field.id}>
+          <Label className="text-sm font-medium mb-2 block" style={labelStyle}>
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          <Input
+            required={field.required}
+            value={mainAttendee.lastName}
+            onChange={(e) => updateMainAttendee("lastName", e.target.value)}
+            placeholder={field.placeholder || ""}
+            className="mt-1 bg-white text-gray-900 border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+          />
+        </div>
+      )
+    }
+
+    if (field.id === "email") {
+      return (
+        <div key={field.id}>
+          <Label className="text-sm font-medium mb-2 block" style={labelStyle}>
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          <Input
+            required={field.required}
+            type="email"
+            value={mainAttendee.email}
+            onChange={(e) => updateMainAttendee("email", e.target.value)}
+            placeholder={field.placeholder || ""}
+            className="mt-1 bg-white text-gray-900 border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+          />
+        </div>
+      )
+    }
+
+    if (field.id === "mobile") {
+      return (
+        <div key={field.id}>
+          <Label className="text-sm font-medium mb-2 block" style={labelStyle}>
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          <Input
+            required={field.required}
+            type="tel"
+            value={mainAttendee.mobile}
+            onChange={(e) => updateMainAttendee("mobile", e.target.value)}
+            placeholder={field.placeholder || ""}
+            className="mt-1 bg-white text-gray-900 border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+          />
+        </div>
+      )
+    }
+
+    if (field.id === "attending_status") {
+      const validOptions = (field.options || []).filter((opt) => opt && opt.trim())
+      return (
+        <div key={field.id}>
+          <Label className="text-sm font-medium mb-2 block" style={labelStyle}>
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          <div className="space-y-2 mt-2">
+            {validOptions.map((option, idx) => (
+              <div key={option} className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id={`${field.id}-${idx}`}
+                  name={field.id}
+                  checked={
+                    mainAttendee.attendingStatus ===
+                    (attendingLabelToValue[option] || option)
+                  }
+                  onChange={() =>
+                    handleAttendingStatusChange(
+                      attendingLabelToValue[option] || option,
+                    )
+                  }
+                  required={field.required && idx === 0}
+                  className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                />
+                <Label
+                  htmlFor={`${field.id}-${idx}`}
+                  className="text-sm font-normal"
+                  style={labelStyle}
+                >
+                  {option}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    if (field.type === "textarea") {
+      return (
+        <div key={field.id}>
+          <Label className="text-sm font-medium mb-2 block" style={labelStyle}>
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          <Textarea
+            required={field.required}
+            value={(customFieldValues[field.id] as string) || ""}
+            onChange={(e) => updateCustomField(field.id, e.target.value)}
+            placeholder={field.placeholder || ""}
+            className="mt-1 bg-white text-gray-900 border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+            rows={4}
+          />
+        </div>
+      )
+    }
+
+    if (field.type === "select") {
+      const validOptions = (field.options || []).filter((opt) => opt && opt.trim())
+      return (
+        <div key={field.id}>
+          <Label className="text-sm font-medium mb-2 block" style={labelStyle}>
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          <Select
+            value={(customFieldValues[field.id] as string) || ""}
+            onValueChange={(v) => updateCustomField(field.id, v)}
+          >
+            <SelectTrigger className="mt-1 bg-white text-gray-900 border-gray-300">
+              <SelectValue placeholder={field.placeholder || "Sélectionner..."} />
+            </SelectTrigger>
+            <SelectContent>
+              {validOptions.map((option, idx) => (
+                <SelectItem key={idx} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )
+    }
+
+    if (field.type === "checkbox") {
+      return (
+        <div key={field.id} className="flex items-center space-x-2">
+          <Checkbox
+            id={field.id}
+            checked={!!customFieldValues[field.id]}
+            onCheckedChange={(checked) => updateCustomField(field.id, !!checked)}
+            required={field.required}
+          />
+          <Label htmlFor={field.id} className="text-sm font-medium" style={labelStyle}>
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+        </div>
+      )
+    }
+
+    if (field.type === "radio") {
+      const validOptions = (field.options || []).filter((opt) => opt && opt.trim())
+      return (
+        <div key={field.id}>
+          <Label className="text-sm font-medium mb-2 block" style={labelStyle}>
+            {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          <div className="space-y-2 mt-2">
+            {validOptions.map((option, idx) => (
+              <div key={idx} className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id={`${field.id}-${idx}`}
+                  name={field.id}
+                  value={option}
+                  checked={customFieldValues[field.id] === option}
+                  onChange={() => updateCustomField(field.id, option)}
+                  required={field.required && idx === 0}
+                  className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
+                />
+                <Label
+                  htmlFor={`${field.id}-${idx}`}
+                  className="text-sm font-normal"
+                  style={labelStyle}
+                >
+                  {option}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div key={field.id}>
+        <Label className="text-sm font-medium mb-2 block" style={labelStyle}>
+          {field.label}
+          {field.required && <span className="text-red-500 ml-1">*</span>}
+        </Label>
+        <Input
+          type={field.type === "phone" ? "tel" : field.type}
+          required={field.required}
+          value={(customFieldValues[field.id] as string) || ""}
+          onChange={(e) => updateCustomField(field.id, e.target.value)}
+          placeholder={field.placeholder || ""}
+          className="mt-1 bg-white text-gray-900 border-gray-300 focus:border-gray-500 focus:ring-gray-500"
+        />
+      </div>
+    )
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -195,14 +460,17 @@ export function PublishedRSVPBlock({
 
       // Format custom fields for other_data
       const otherData: Record<string, string | boolean> = {}
+      const mobileField = normalizedFields.find((f) => f.id === "mobile")
       if (mainAttendee.mobile) {
-        otherData[getFieldLabel("mobile", "Mobile")] = mainAttendee.mobile
+        otherData[mobileField?.label || "Mobile"] = mainAttendee.mobile
       }
-      extraFields.forEach((field) => {
-        if (customFieldValues[field.id] !== undefined) {
-          otherData[field.label] = customFieldValues[field.id]
-        }
-      })
+      normalizedFields
+        .filter((field) => !isLockedField(field.id))
+        .forEach((field) => {
+          if (customFieldValues[field.id] !== undefined) {
+            otherData[field.label] = customFieldValues[field.id]
+          }
+        })
 
       const response = await fetch("/api/rsvp", {
         method: "POST",
@@ -285,6 +553,7 @@ export function PublishedRSVPBlock({
 
   return (
     <section
+      id="custom-form"
       className="py-16"
       style={{
         backgroundColor: config.backgroundColor || theme.backgroundColor,
@@ -310,212 +579,51 @@ export function PublishedRSVPBlock({
           >
             {config.title}
           </h2>
-          <p
-            className="mb-8 text-pretty whitespace-pre-line"
-            style={{ color: config.textColor || theme.textColor, opacity: 0.9 }}
-          >
-            {config.description?.replace(/<br\s*\/?>/gi, "\n")}
-          </p>
+          {config.description && (
+            <p
+              className="mb-8 text-pretty whitespace-pre-line"
+              style={{ color: config.textColor || theme.textColor, opacity: 0.9 }}
+            >
+              {config.description.replace(/<br\s*\/?>/gi, "\n")}
+            </p>
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-6 text-left">
-            {/* Main Attendee Section */}
+          <form onSubmit={handleSubmit} className="space-y-4 text-left">
+            {normalizedFields.map((field) => renderPublishedField(field))}
+
             <div
-              className="p-4 rounded-lg border space-y-4"
+              className="space-y-3 p-4 rounded-lg border"
               style={{
                 borderColor: `${config.textColor || theme.textColor}20`,
               }}
             >
               <div>
-                <span
-                  className="text-sm font-medium"
-                  style={{ color: config.textColor || theme.textColor }}
-                >
-                  Vos informations
-                </span>
-              </div>
-
-              <div className="grid grid-cols-4 gap-3">
-                <div>
-                  <Label
-                    className="text-sm mb-1 block"
-                    style={{ color: config.textColor || theme.textColor }}
-                  >
-                    {getFieldLabel("name_title", "Civilité")} <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={mainAttendee.nameTitle}
-                    onValueChange={(v) => updateMainAttendee("nameTitle", v)}
-                  >
-                    <SelectTrigger className="bg-white text-gray-900">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">M.</SelectItem>
-                      <SelectItem value="2">Mme</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="col-span-3 grid grid-cols-2 gap-3">
-                  <div>
-                    <Label
-                      className="text-sm mb-1 block"
-                      style={{ color: config.textColor || theme.textColor }}
-                    >
-                      {getFieldLabel("first_name", "Prénom")} <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      required
-                      value={mainAttendee.firstName}
-                      onChange={(e) =>
-                        updateMainAttendee("firstName", e.target.value)
-                      }
-                      className="bg-white text-gray-900 border-gray-300"
-                      placeholder="Prénom"
-                    />
-                  </div>
-                  <div>
-                    <Label
-                      className="text-sm mb-1 block"
-                      style={{ color: config.textColor || theme.textColor }}
-                    >
-                      {getFieldLabel("last_name", "Nom")} <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      required
-                      value={mainAttendee.lastName}
-                      onChange={(e) =>
-                        updateMainAttendee("lastName", e.target.value)
-                      }
-                      className="bg-white text-gray-900 border-gray-300"
-                      placeholder="Nom"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
                 <Label
                   className="text-sm mb-1 block"
                   style={{ color: config.textColor || theme.textColor }}
                 >
-                  {getFieldLabel("email", "Email")} <span className="text-red-500">*</span>
+                  {config.companionsLabel || "Invités supplémentaires"}
                 </Label>
                 <Input
-                  required
-                  type="email"
-                  value={mainAttendee.email}
-                  onChange={(e) => updateMainAttendee("email", e.target.value)}
+                  min={0}
+                  type="number"
+                  value={companionsCountInput}
+                  onChange={(e) => handleCompanionsCountChange(e.target.value)}
                   className="bg-white text-gray-900 border-gray-300"
-                  placeholder="email@exemple.com"
+                  placeholder="Nombre de personnes supplémentaires"
                 />
               </div>
 
-              <div>
-                <Label
-                  className="text-sm mb-1 block"
-                  style={{ color: config.textColor || theme.textColor }}
-                >
-                  {getFieldLabel("mobile", "Mobile")} <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  required
-                  type="tel"
-                  value={mainAttendee.mobile}
-                  onChange={(e) => updateMainAttendee("mobile", e.target.value)}
-                  className="bg-white text-gray-900 border-gray-300"
-                  placeholder="06 12 34 56 78"
-                />
-              </div>
-
-              <div>
-                <Label
-                  className="text-sm mb-2 block"
-                  style={{ color: config.textColor || theme.textColor }}
-                >
-                  {getFieldLabel("attending_status", "Seras-tu présent à la réception ?")}{" "}
-                  <span className="text-red-500">*</span>
-                </Label>
-                <div className="space-y-2">
-                  <label
-                    className="flex items-center gap-2 text-sm"
-                    style={{ color: config.textColor || theme.textColor }}
-                  >
-                    <input
-                      type="radio"
-                      name="attending-status"
-                      checked={mainAttendee.attendingStatus === "1"}
-                      onChange={() => handleAttendingStatusChange("1")}
-                      className="h-4 w-4"
-                      required
-                    />
-                    Oui
-                  </label>
-                  <label
-                    className="flex items-center gap-2 text-sm"
-                    style={{ color: config.textColor || theme.textColor }}
-                  >
-                    <input
-                      type="radio"
-                      name="attending-status"
-                      checked={mainAttendee.attendingStatus === "3"}
-                      onChange={() => handleAttendingStatusChange("3")}
-                      className="h-4 w-4"
-                    />
-                    Non
-                  </label>
-                  <label
-                    className="flex items-center gap-2 text-sm"
-                    style={{ color: config.textColor || theme.textColor }}
-                  >
-                    <input
-                      type="radio"
-                      name="attending-status"
-                      checked={mainAttendee.attendingStatus === "2"}
-                      onChange={() => handleAttendingStatusChange("2")}
-                      className="h-4 w-4"
-                    />
-                    Je ne sais pas encore
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            {/* Invités Supplémentaires Section - Only show if attending */}
-            {mainAttendee.attendingStatus === "1" && (
-              <div
-                className="space-y-3 p-4 rounded-lg border"
-                style={{
-                  borderColor: `${config.textColor || theme.textColor}20`,
-                }}
-              >
-                <div>
+              {companionsCount > 0 ? (
+                <div className="bg-gray-50 p-3 rounded border border-gray-200">
                   <Label
-                    className="text-sm mb-1 block"
+                    className="text-sm block"
                     style={{ color: config.textColor || theme.textColor }}
                   >
-                    {config.companionsLabel || "Invités supplémentaires"}
+                    {config.companionsDescription ||
+                      "Merci d'indiquer le(s) nom(s) et prénom(s) des personnes qui t'accompagnent."}
                   </Label>
-                  <Input
-                    min={0}
-                    type="number"
-                    value={companionsCountInput}
-                    onChange={(e) =>
-                      handleCompanionsCountChange(e.target.value)
-                    }
-                    className="bg-white text-gray-900 border-gray-300"
-                    placeholder="Nombre de personnes supplémentaires"
-                  />
-                </div>
-
-                {companionsCount > 0 && (
-                  <div className="space-y-3 mt-4">
-                    <Label
-                      className="text-sm block"
-                      style={{ color: config.textColor || theme.textColor }}
-                    >
-                      {config.companionsDescription || "Merci d'indiquer le(s) nom(s) et prénom(s) des personnes qui t'accompagnent."}
-                    </Label>
+                  <div className="space-y-3 mt-3">
                     {companions.map((companion, index) => (
                       <div
                         key={`companion-${index}`}
@@ -540,131 +648,33 @@ export function PublishedRSVPBlock({
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
-            )}
-
-            {/* Extra Custom Fields */}
-            {extraFields.map((field) => {
-              const labelStyle = { color: config.textColor || theme.textColor }
-              const fieldLabel = (
-                <Label
-                  className="text-sm mb-1 block"
-                  style={labelStyle}
-                >
-                  {field.label}
-                  {field.required && (
-                    <span className="text-red-500 ml-1">*</span>
-                  )}
-                </Label>
-              )
-
-              if (field.type === "textarea") {
-                return (
-                  <div key={field.id}>
-                    {fieldLabel}
-                    <Textarea
-                      required={field.required}
-                      value={(customFieldValues[field.id] as string) || ""}
-                      onChange={(e) => updateCustomField(field.id, e.target.value)}
-                      className="bg-white text-gray-900 border-gray-300"
-                      placeholder={field.placeholder || ""}
-                      rows={4}
-                    />
-                  </div>
-                )
-              }
-
-              if (field.type === "select") {
-                const validOptions = (field.options || []).filter((opt) => opt && opt.trim())
-                return (
-                  <div key={field.id}>
-                    {fieldLabel}
-                    <Select
-                      value={(customFieldValues[field.id] as string) || ""}
-                      onValueChange={(v) => updateCustomField(field.id, v)}
-                    >
-                      <SelectTrigger className="bg-white text-gray-900 border-gray-300">
-                        <SelectValue placeholder={field.placeholder || "Sélectionner..."} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {validOptions.map((option, idx) => (
-                          <SelectItem key={idx} value={option}>
-                            {option}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )
-              }
-
-              if (field.type === "radio") {
-                const validOptions = (field.options || []).filter((opt) => opt && opt.trim())
-                return (
-                  <div key={field.id}>
-                    {fieldLabel}
-                    <div className="space-y-2 mt-1">
-                      {validOptions.map((option, idx) => (
-                        <label
-                          key={idx}
-                          className="flex items-center gap-2 text-sm"
-                          style={labelStyle}
-                        >
-                          <input
-                            type="radio"
-                            name={field.id}
-                            value={option}
-                            checked={customFieldValues[field.id] === option}
-                            onChange={() => updateCustomField(field.id, option)}
-                            required={field.required && idx === 0}
-                            className="h-4 w-4"
-                          />
-                          {option}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )
-              }
-
-              if (field.type === "checkbox") {
-                return (
-                  <div key={field.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={field.id}
-                      checked={!!customFieldValues[field.id]}
-                      onCheckedChange={(checked) => updateCustomField(field.id, !!checked)}
-                      required={field.required}
-                    />
-                    <Label
-                      htmlFor={field.id}
-                      className="text-sm"
-                      style={labelStyle}
-                    >
-                      {field.label}
-                      {field.required && (
-                        <span className="text-red-500 ml-1">*</span>
-                      )}
-                    </Label>
-                  </div>
-                )
-              }
-
-              return (
-                <div key={field.id}>
-                  {fieldLabel}
-                  <Input
-                    type={field.type === "phone" ? "tel" : field.type}
-                    required={field.required}
-                    value={(customFieldValues[field.id] as string) || ""}
-                    onChange={(e) => updateCustomField(field.id, e.target.value)}
-                    className="bg-white text-gray-900 border-gray-300"
-                    placeholder={field.placeholder || ""}
-                  />
                 </div>
-              )
-            })}
+              ) : (
+                <div className="bg-gray-50 p-3 rounded border border-gray-200">
+                  <Label
+                    className="text-sm block"
+                    style={{ color: config.textColor || theme.textColor }}
+                  >
+                    {config.companionsDescription ||
+                      "Merci d'indiquer le(s) nom(s) et prénom(s) des personnes qui t'accompagnent."}
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3 mt-3">
+                    <Input
+                      type="text"
+                      disabled
+                      placeholder="Prénom personne 1"
+                      className="bg-gray-100 text-gray-500 border-gray-300"
+                    />
+                    <Input
+                      type="text"
+                      disabled
+                      placeholder="Nom personne 1"
+                      className="bg-gray-100 text-gray-500 border-gray-300"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
 
             {error && (
               <p className="text-red-500 text-sm text-center">{error}</p>
@@ -687,7 +697,7 @@ export function PublishedRSVPBlock({
                   Envoi en cours...
                 </>
               ) : (
-                config.buttonText || "S'inscrire"
+                config.buttonText || "Envoyer"
               )}
             </Button>
           </form>
