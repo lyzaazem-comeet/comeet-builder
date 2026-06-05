@@ -8,6 +8,11 @@ const nextConfig = {
       },
     ],
   },
+  api: {
+    bodyParser: {
+      sizeLimit: "10mb", // Increase body size limit for large block data
+    },
+  },
 }
 
 export default nextConfig

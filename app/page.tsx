@@ -188,8 +188,17 @@ export default function EventBuilder() {
           })
 
           if (!response.ok) {
-            const error = await response.json()
-            throw new Error(error.error || "Save failed")
+            const contentType = response.headers.get("content-type")
+            let errorMessage = `HTTP ${response.status}`
+            if (contentType?.includes("application/json")) {
+              try {
+                const error = await response.json()
+                errorMessage = error.error || errorMessage
+              } catch (e) {
+                // JSON parse failed, use status message
+              }
+            }
+            throw new Error(errorMessage)
           }
           // Success - DB save complete, no need for localStorage
         } else {

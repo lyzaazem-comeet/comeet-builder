@@ -14,6 +14,14 @@ export async function POST(req: Request) {
       )
     }
 
+    // Check file size (50MB limit for safety)
+    if (file.size > 50 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: "File too large (max 50MB)" },
+        { status: 400 },
+      )
+    }
+
     // Generate unique path: eventId/timestamp-filename
     const ext = file.name.split(".").pop() || "jpg"
     const folder = eventId || "general"
@@ -41,7 +49,6 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error: `Upload failed: ${error.message}`,
-          details: error,
         },
         { status: 500 },
       )
@@ -49,19 +56,18 @@ export async function POST(req: Request) {
 
     console.log("Upload successful:", data)
 
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("event-images").getPublicUrl(filename)
+    const { data: urlData } = supabase.storage
+      .from("event-images")
+      .getPublicUrl(filename)
 
-    console.log("Generated public URL:", publicUrl)
+    console.log("Generated public URL:", urlData.publicUrl)
 
-    return NextResponse.json({ url: publicUrl })
+    return NextResponse.json({ url: urlData.publicUrl })
   } catch (e: any) {
     console.error("Upload endpoint error:", e)
     return NextResponse.json(
       {
-        error: e.message,
-        stack: process.env.NODE_ENV === "development" ? e.stack : undefined,
+        error: e.message || "Upload failed",
       },
       { status: 500 },
     )
