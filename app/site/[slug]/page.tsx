@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { PublishedSite } from "@/components/published-site"
 import type { Metadata } from "next"
 import type { BlockType } from "@/types/blocks"
+import { normalizeWebsiteSlug } from "@/lib/domains"
 
 interface Props {
   params: { slug: string }
@@ -10,8 +11,9 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const slug = normalizeWebsiteSlug(params.slug)
   const website = await prisma.website.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
   })
 
   return {
@@ -21,8 +23,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PublishedSitePage({ params, searchParams }: Props) {
+  const slug = normalizeWebsiteSlug(params.slug)
   const website = await prisma.website.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     include: { blocks: { orderBy: { position: "asc" } } },
   })
 

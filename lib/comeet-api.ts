@@ -19,6 +19,7 @@ export interface ComeetEventDetails {
   postal_code: string
   encrypted_id: string
   event_status: string
+  event_sub_domain?: string
   [key: string]: any
 }
 

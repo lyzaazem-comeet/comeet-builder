@@ -52,20 +52,34 @@ export function getSubdomainFromHost(host: string, rootDomain?: string): string 
   return subdomain
 }
 
+/** Normalize a value for use as website slug / subdomain (always lowercase). */
+export function normalizeWebsiteSlug(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60)
+}
+
 /** Build the public URL for a published event site. */
 export function getPublishedSiteUrl(slug: string): string {
+  const normalizedSlug = normalizeWebsiteSlug(slug)
   const rootDomain = getRootDomain()
 
   if (rootDomain) {
     const protocol =
       process.env.NEXT_PUBLIC_APP_PROTOCOL ||
       (process.env.NODE_ENV === "production" ? "https" : "http")
-    return `${protocol}://${slug}.${rootDomain}`
+    return `${protocol}://${normalizedSlug}.${rootDomain}`
   }
 
-  const appUrl =
+  const rawAppUrl =
     process.env.NEXT_PUBLIC_APP_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
 
-  return `${appUrl}/site/${slug}`
+  const appUrl = rawAppUrl.replace(/\/+$/, "")
+
+  return `${appUrl}/site/${normalizedSlug}`
 }

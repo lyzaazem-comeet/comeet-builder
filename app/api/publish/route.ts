@@ -1,50 +1,73 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { nanoid } from "nanoid"
-import { submitPublishedUrl } from "@/lib/comeet-api"
-import { getPublishedSiteUrl } from "@/lib/domains"
+import { fetchEventDetails, submitPublishedUrl } from "@/lib/comeet-api"
+import { getPublishedSiteUrl, normalizeWebsiteSlug } from "@/lib/domains"
 
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Remove accents
-    .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric with hyphens
-    .replace(/^-+|-+$/g, "") // Trim hyphens
-    .slice(0, 60) // Limit length
+async function resolveWebsiteSlug(
+  eventId: string,
+  options: {
+    eventSubDomain?: string | null
+    eventName?: string | null
+    existingSlug?: string | null
+  },
+): Promise<string> {
+  const fromSubDomain = options.eventSubDomain
+    ? normalizeWebsiteSlug(options.eventSubDomain)
+    : ""
+
+  let slug =
+    fromSubDomain ||
+    (options.existingSlug ? normalizeWebsiteSlug(options.existingSlug) : "") ||
+    (options.eventName ? normalizeWebsiteSlug(options.eventName) : "") ||
+    nanoid(10).toLowerCase()
+
+  const taken = await prisma.website.findUnique({ where: { slug } })
+  if (taken && taken.eventId !== eventId) {
+    slug = `${slug}-${nanoid(4).toLowerCase()}`
+  }
+
+  return slug
 }
 
 // POST /api/publish — full publish sequence
 export async function POST(req: Request) {
   try {
-    const { eventId, blocks, theme, eventName } = await req.json()
+    const { eventId, blocks, theme, eventName, eventSubDomain } =
+      await req.json()
 
     if (!eventId) {
       return NextResponse.json(
         { error: "Missing eventId" },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
-    // Check if website already exists
     const existing = await prisma.website.findUnique({
       where: { eventId },
     })
 
-    // Use event name as slug, fallback to nanoid
-    let slug = existing?.slug || ""
-    if (!slug) {
-      const baseSlug = eventName ? slugify(eventName) : nanoid(10)
-      // Check uniqueness
-      const taken = await prisma.website.findUnique({ where: { slug: baseSlug } })
-      slug = taken ? `${baseSlug}-${nanoid(4)}` : baseSlug
+    let subDomain = eventSubDomain
+    if (!subDomain) {
+      try {
+        const eventDetails = await fetchEventDetails(eventId)
+        subDomain = eventDetails.event_sub_domain
+      } catch (error) {
+        console.error("Failed to fetch event details for subdomain:", error)
+      }
     }
 
-    // Save to DB with published = true
+    const slug = await resolveWebsiteSlug(eventId, {
+      eventSubDomain: subDomain,
+      eventName,
+      existingSlug: existing?.slug,
+    })
+
     const website = await prisma.website.upsert({
       where: { eventId },
       update: {
         name: eventName || existing?.name || "Event Site",
+        slug,
         theme,
         published: true,
         publishedAt: new Date(),
@@ -75,17 +98,15 @@ export async function POST(req: Request) {
       include: { blocks: true },
     })
 
-    const publishedUrl = getPublishedSiteUrl(slug)
+    const publishedUrl = getPublishedSiteUrl(website.slug)
 
-    // Notify Comeet API
     try {
       await submitPublishedUrl(eventId, publishedUrl)
     } catch (error) {
       console.error("Failed to notify Comeet API:", error)
-      // Don't fail the whole publish if Comeet notification fails
     }
 
-    return NextResponse.json({ publishedUrl, slug })
+    return NextResponse.json({ publishedUrl, slug: website.slug })
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })
   }

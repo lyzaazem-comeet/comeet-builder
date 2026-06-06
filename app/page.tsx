@@ -453,6 +453,7 @@ export default function EventBuilder() {
           blocks,
           theme,
           eventName: eventDetails?.name,
+          eventSubDomain: eventDetails?.event_sub_domain,
         }),
       })
 
