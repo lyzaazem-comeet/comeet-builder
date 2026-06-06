@@ -5,7 +5,7 @@ import { fetchEventDetails } from "@/lib/comeet-api"
 // GET /api/event/[eventId] — fetch event details + check DB for existing website
 export async function GET(
   req: Request,
-  { params }: { params: { eventId: string } }
+  { params }: { params: { eventId: string } },
 ) {
   const { eventId } = params
 
@@ -17,7 +17,6 @@ export async function GET(
     } catch (error) {
       console.error("Failed to fetch event details from Comeet:", error)
     }
-
     // Check DB for existing website with this eventId
     const existingWebsite = await prisma.website.findUnique({
       where: { eventId },

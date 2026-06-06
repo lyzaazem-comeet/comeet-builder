@@ -12,7 +12,6 @@ interface RSVPBlockProps {
   config: {
     title: string
     description: string
-    fields: string[]
     buttonText: string
     backgroundColor?: string
     textColor?: string

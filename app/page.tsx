@@ -11,6 +11,7 @@ import { PublishDialog } from "@/components/publish-dialog"
 import type { Block, BlockType, Theme } from "@/types/blocks"
 import type { Template } from "@/lib/templates"
 import { getNormalizedCustomFormFields } from "@/lib/custom-form"
+import { getPublishedSiteUrl } from "@/lib/domains"
 import { toast } from "sonner"
 
 function normalizeFormBlocks(blocks: Block[]): Block[] {
@@ -112,9 +113,7 @@ export default function EventBuilder() {
           setShowTemplateSelector(false)
 
           if (existingWebsite.published && existingWebsite.slug) {
-            setPublishedUrl(
-              `${window.location.origin}/site/${existingWebsite.slug}`,
-            )
+            setPublishedUrl(getPublishedSiteUrl(existingWebsite.slug))
           }
         } else {
           // Check localStorage

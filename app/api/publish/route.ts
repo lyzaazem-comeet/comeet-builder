@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { nanoid } from "nanoid"
 import { submitPublishedUrl } from "@/lib/comeet-api"
+import { getPublishedSiteUrl } from "@/lib/domains"
 
 function slugify(text: string): string {
   return text
@@ -74,11 +75,7 @@ export async function POST(req: Request) {
       include: { blocks: true },
     })
 
-    // Build the published URL
-    const appUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
-    const publishedUrl = `${appUrl}/site/${slug}`
+    const publishedUrl = getPublishedSiteUrl(slug)
 
     // Notify Comeet API
     try {
