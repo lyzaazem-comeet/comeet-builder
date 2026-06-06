@@ -26,7 +26,7 @@ export interface ComeetEventDetails {
 export interface GuestData {
   event: { id: number }
   guests: {
-    token: string
+    token: string | null
     limit: number
     status: string
   }
@@ -49,7 +49,7 @@ export interface RSVPSubmission {
   last_name: string[]
   email: string[]
   attending_status: string[]
-  guest_access_token: string
+  guests?: GuestData["guests"] | null
   other_data?: string
 }
 
@@ -92,32 +92,32 @@ export async function decryptGuestData(
   return response.json()
 }
 
-export async function submitRSVP(data: RSVPSubmission) {
+export async function submitRSVP(submission: RSVPSubmission) {
   const params = new URLSearchParams()
-  params.append("event_id", data.event_id.toString())
-  params.append("guest_access_token", data.guest_access_token)
-  params.append("seatlimit", data.seatlimit.toString())
-  params.append("total_attending_no", data.total_attending_no.toString())
+  params.append("event_id", submission.event_id.toString())
+  params.append("guest_access_token", submission.guests?.token ?? "")
+  params.append("seatlimit", submission.seatlimit.toString())
+  params.append("total_attending_no", submission.total_attending_no.toString())
 
   // Add arrays with bracket notation
-  data.name_title.forEach((value) => {
+  submission.name_title.forEach((value) => {
     params.append("name_title[]", value)
   })
-  data.first_name.forEach((value) => {
+  submission.first_name.forEach((value) => {
     params.append("first_name[]", value)
   })
-  data.last_name.forEach((value) => {
+  submission.last_name.forEach((value) => {
     params.append("last_name[]", value)
   })
-  data.email.forEach((value) => {
+  submission.email.forEach((value) => {
     params.append("email[]", value)
   })
-  data.attending_status.forEach((value) => {
+  submission.attending_status.forEach((value) => {
     params.append("attending_status[]", value)
   })
 
-  if (data.other_data) {
-    params.append("other_data", data.other_data)
+  if (submission.other_data) {
+    params.append("other_data", submission.other_data)
   }
 
   const response = await fetch(`${COMEET_API_BASE}/event_invite_form_submit`, {

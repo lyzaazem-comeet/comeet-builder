@@ -484,7 +484,7 @@ export function PublishedRSVPBlock({
           last_name: lastNames,
           email: emails,
           attending_status: attendingStatuses,
-          guest_access_token: guestData?.guests?.token || "",
+          guests: guestData?.guests,
           other_data: JSON.stringify(otherData),
         }),
       })

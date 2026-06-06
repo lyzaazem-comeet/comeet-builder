@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     if (!data) {
       return NextResponse.json(
         { error: "Missing data parameter" },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
