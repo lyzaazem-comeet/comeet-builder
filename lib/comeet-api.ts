@@ -49,6 +49,7 @@ export interface RSVPSubmission {
   last_name: string[]
   email: string[]
   attending_status: string[]
+  guest_access_token?: string | null
   guests?: GuestData["guests"] | null
   other_data?: string
 }
@@ -95,7 +96,10 @@ export async function decryptGuestData(
 export async function submitRSVP(submission: RSVPSubmission) {
   const params = new URLSearchParams()
   params.append("event_id", submission.event_id.toString())
-  params.append("guest_access_token", submission.guests?.token ?? "")
+  params.append(
+    "guest_access_token",
+    submission.guest_access_token ?? submission.guests?.token ?? "",
+  )
   params.append("seatlimit", submission.seatlimit.toString())
   params.append("total_attending_no", submission.total_attending_no.toString())
 

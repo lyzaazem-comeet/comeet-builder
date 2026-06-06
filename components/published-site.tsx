@@ -186,6 +186,7 @@ export function PublishedSite({
           theme={theme}
           eventId={eventId}
           guestData={guestData}
+          encryptedGuestData={encryptedGuestData}
         />
       )
     }

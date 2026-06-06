@@ -42,6 +42,7 @@ interface PublishedRSVPBlockProps {
   theme: Theme
   eventId: string
   guestData: GuestData | null
+  encryptedGuestData?: string
 }
 
 interface MainAttendee {
@@ -67,6 +68,7 @@ export function PublishedRSVPBlock({
   theme,
   eventId,
   guestData,
+  encryptedGuestData,
 }: PublishedRSVPBlockProps) {
   const [mainAttendee, setMainAttendee] =
     useState<MainAttendee>(emptyMainAttendee())
@@ -484,7 +486,7 @@ export function PublishedRSVPBlock({
           last_name: lastNames,
           email: emails,
           attending_status: attendingStatuses,
-          guests: guestData?.guests,
+          ...(encryptedGuestData ? { data: encryptedGuestData } : {}),
           other_data: JSON.stringify(otherData),
         }),
       })
