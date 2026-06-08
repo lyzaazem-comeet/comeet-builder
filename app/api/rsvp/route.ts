@@ -6,11 +6,23 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { data: encryptedGuestData, ...submission } = body;
+    console.log({ body });
+    console.log({ encryptedGuestData, submission });
 
     let guestAccessToken: string | null = null;
 
     if (encryptedGuestData) {
       const decrypted = await decryptGuestData(encryptedGuestData);
+      console.log("Decrypted guest data:", decrypted);
+      //@ts-expect-error retype this
+
+      console.log("data : ", decrypted?.data);
+      //@ts-expect-error retype this
+
+      console.log("guest ", decrypted?.data.guest);
+
+      //@ts-expect-error retype this
+      console.log("token ", decrypted?.data.guest?.token);
       //@ts-expect-error retype this
       guestAccessToken = decrypted?.data.guest?.token ?? null;
     }
