@@ -23,7 +23,9 @@ export async function POST(req: Request) {
 
       //@ts-expect-error retype this
       console.log("token ", decrypted?.guest?.token);
-      guestAccessToken = decrypted?.guests?.token ?? null;
+      //@ts-expect-error retype this
+
+      guestAccessToken = decrypted?.guest?.token ?? null;
     }
     console.log({ guestAccessToken });
     const result = await submitRSVP({
