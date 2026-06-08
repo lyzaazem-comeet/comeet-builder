@@ -13,6 +13,7 @@ export async function POST(req: Request) {
 
     if (encryptedGuestData) {
       const decrypted = await decryptGuestData(encryptedGuestData);
+      console.log("Decrypted guest data:", decrypted);
       guestAccessToken = decrypted.guests?.token ?? null;
     }
     console.log({ guestAccessToken });
