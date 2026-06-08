@@ -58,7 +58,6 @@ export function PublishedSite({
         .then((res) => res.json())
         .then((data) => {
           if (!data.error) {
-            console.log("Decrypted guest data:", data)
             setGuestData(data)
           }
         })
