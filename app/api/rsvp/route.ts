@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     if (encryptedGuestData) {
       const decrypted = await decryptGuestData(encryptedGuestData);
       //@ts-expect-error retype this
-      guestAccessToken = decrypted?.data.guests?.token ?? null;
+      guestAccessToken = decrypted?.data.guest?.token ?? null;
     }
     console.log({ guestAccessToken });
     const result = await submitRSVP({
