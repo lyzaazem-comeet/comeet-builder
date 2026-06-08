@@ -15,6 +15,7 @@ export async function POST(req: Request) {
       const decrypted = await decryptGuestData(encryptedGuestData);
       guestAccessToken = decrypted.guests?.token ?? null;
     }
+    console.log({ guestAccessToken });
     const result = await submitRSVP({
       ...submission,
       ...(guestAccessToken ? { guest_access_token: guestAccessToken } : {}),
